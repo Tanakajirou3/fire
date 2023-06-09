@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>LINE風チャットアプリ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    #chatbox {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #message-container {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f5f5f5;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      background-color: #eaeaea;
+    }
+
+    .message.userA {
+      background-color: #dcf8c6;
+      align-self: flex-start;
+    }
+
+    .message.userB {
+      background-color: #fff;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .clear-button {
+      text-align: center;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+
+<body>
+  <h1>LINE風チャットアプリ</h1>
+
+  <div id="chatbox">
+    <div id="message-container"></div>
+    <input type="text" id="userA-input" placeholder="ユーザーAのメッセージ">
+    <button onclick="sendMessage('A')">ユーザーAが送信</button>
+    <br><br>
+    <input type="text" id="userB-input" placeholder="ユーザーBのメッセージ">
+    <button onclick="sendMessage('B')">ユーザーBが送信</button>
+    <div class="clear-button">
+      <button onclick="clearMessages()">履歴を消す</button>
+    </div>
+  </div>
+
+  <script>
+    // Firebaseの設定
+    var firebaseConfig = {
+      apiKey: "AIzaSyDPSand8aAaMWe3uYvWm07m6n_xSMNGc4A",
+      authDomain: "linelike-35443.firebaseapp.com",
+      projectId: "linelike-35443",
+      storageBucket: "linelike-35443.appspot.com",
+      messagingSenderId: "672132171035",
+      appId: "1:672132171035:web:e16fd15c22c238d30d7fbe",
+    };
+
+    // Firebaseの初期化
+    firebase.initializeApp(firebaseConfig);
+
+    // データベースの参照
+    var database = firebase.database();
+
+    // メッセージ送信
+    function sendMessage(user) {
+      var message;
+
+      if (user === 'A') {
+        message = document.getElementById('userA-input').value;
+      } else if (user === 'B') {
+        message = document.getElementById('userB-input').value;
+      }
+
+      if (message !== '') {
+        var messagesRef = database.ref('messages');
+        messagesRef.push().set({
+          user: user,
+          text: message
+        });
+
+        // 入力欄をクリア
+        if (user === 'A') {
+          document.getElementById('userA-input').value = '';
+        } else if (user === 'B') {
+          document.getElementById('userB-input').value = '';
+        }
+      }
+    }
+
+    // メッセージ受信
+    var messagesRef = database.ref('messages');
+    messagesRef.on('child_added', function (snapshot) {
+      var message = snapshot.val();
+      var messageElement = document.createElement('div');
+      messageElement.textContent = message.user + ': ' + message.text;
+      messageElement.className = 'message ' + 'user' + message.user;
+      document.getElementById('message-container').appendChild(messageElement);
+    });
+
+    // 履歴を消す
+    function clearMessages() {
+      var messageContainer = document.getElementById('message-container');
+      messageContainer.innerHTML = '';
+    }
+  </script>
+</body>
+
+</html>
